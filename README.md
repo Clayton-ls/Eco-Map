@@ -1,74 +1,97 @@
-# Getting Started with Create React App
+# 🌱 EcoMap – Mapa Colaborativo de Sustentabilidade Urbana
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> Mapeando um mundo mais sustentável.
 
-## Available Scripts
+**EcoMap** é uma plataforma web colaborativa para mapear pontos sustentáveis da cidade: coleta seletiva, áreas verdes e feiras orgânicas. Qualquer pessoa pode navegar pelo mapa; usuários cadastrados contribuem com novos pontos usando a geolocalização do próprio dispositivo — e todos os dados são atualizados em tempo real.
 
-In the project directory, you can run:
+O projeto foi desenvolvido no âmbito de uma atividade extensionista (AE-I/II), aplicado ao bairro Pedreira, Guarujá/SP, alinhado aos **ODS 11** (Cidades e Comunidades Sustentáveis) e **12** (Consumo e Produção Responsáveis).
 
-### `npm start`
+## ✨ Funcionalidades
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- 🗺️ Mapa interativo (Leaflet + OpenStreetMap) centralizado na localização do usuário
+- 📍 Cadastro de pontos pela geolocalização atual: nome, tipo e descrição
+- 🎨 Marcadores coloridos por categoria:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+  | Categoria | Cor do marcador |
+  | --- | --- |
+  | Coleta Seletiva | 🟢 Verde |
+  | Área Verde | 🟣 Violeta |
+  | Feira Orgânica | 🟠 Laranja |
 
-### `npm test`
+- 🔎 Busca/filtro de pontos por nome
+- ⚡ **Tempo real**: novos pontos aparecem instantaneamente no mapa de todos os usuários (`onSnapshot` do Firestore)
+- 🔐 Criação de conta e login com e-mail/senha (Firebase Authentication) — apenas usuários logados podem adicionar pontos; convidados podem navegar pelo mapa
+- ✅ Mensagens de erro amigáveis em português (e-mail inválido, senha incorreta, etc.)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠️ Stack tecnológica
 
-### `npm run build`
+| Camada | Tecnologia |
+| --- | --- |
+| Frontend | React 19 (Create React App) |
+| Mapa | Leaflet + react-leaflet (tiles OpenStreetMap) |
+| Componentes de UI | MUI (Material UI) v7 |
+| Banco de dados | Firebase Firestore (tempo real) |
+| Autenticação | Firebase Authentication (e-mail/senha) |
+| Roteamento | React Router v7 |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🚀 Como rodar localmente
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Pré-requisitos
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Node.js 18+ e npm
+- Um projeto no Firebase com **Authentication** (e-mail/senha) e **Firestore Database** habilitados
 
-### `npm run eject`
+### Passos
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+# 1. Instale as dependências
+npm install
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# 2. Crie o arquivo .env na raiz do projeto (veja "Variáveis de ambiente")
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# 3. Rode em modo desenvolvimento
+npm start
+# → http://localhost:3000
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Build de produção (gerado na pasta build/)
+npm run build
+```
 
-## Learn More
+## 🔐 Variáveis de ambiente
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+As chaves do Firebase **não estão escritas no código** — são lidas de variáveis de ambiente em tempo de build. Crie um arquivo `.env` na raiz do projeto (ele já está no `.gitignore`, então nunca o commite):
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```env
+REACT_APP_FIREBASE_API_KEY=<sua_api_key>
+REACT_APP_FIREBASE_AUTH_DOMAIN=<seu_projeto>.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=<id_do_seu_projeto>
+REACT_APP_FIREBASE_STORAGE_BUCKET=<bucket_do_seu_projeto>
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=<sender_id>
+REACT_APP_FIREBASE_APP_ID=<app_id>
+```
 
-### Code Splitting
+Todos os valores estão disponíveis em **Firebase Console → Project settings**.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 📁 Estrutura do projeto
 
-### Analyzing the Bundle Size
+```
+src/
+├── App.js                 # Rotas, busca e estado dos pontos
+├── firebase.js            # Inicialização do Firebase (Auth + Firestore) e coleção ecoPoints
+├── index.js               # Entry point
+├── index.css              # Estilos e layout
+├── components/
+│   ├── AddPointForm.jsx   # Formulário de novo ponto (geolocalização)
+│   ├── Login.jsx          # Login e cadastro (e-mail/senha)
+│   └── MapView.jsx        # Mapa Leaflet com marcadores e popups
+└── contexts/
+    └── AuthContext.jsx    # Sessão do usuário (useAuth / logout)
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🧭 Como usar
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# Eco-Map
-# Eco-Map
-# Eco-Map
-# Eco-Map
+1. Acesse a aplicação (`http://localhost:3000` em desenvolvimento);
+2. Clique em **Entrar / Cadastrar** e crie sua conta com e-mail/senha;
+3. No formulário **Novo Ponto**, preencha o nome, selecione o tipo (Coleta Seletiva, Área Verde ou Feira Orgânica), adicione uma descrição e clique em **Marcar minha localização** — o navegador pedirá permissão de geolocalização;
+4. O ponto é salvo no Firestore e aparece no mapa — e também no mapa dos demais usuários, em tempo real;
+5. Use a barra de busca acima do mapa para filtrar pontos por nome.
