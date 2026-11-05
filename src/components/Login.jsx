@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { auth } from '../firebase'; // Verifique se o caminho do firebase está correto aqui
+import { auth } from '../firebase';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword 
@@ -35,6 +35,7 @@ export default function Login() {
       else if (err.code === 'auth/wrong-password') setError('Senha incorreta.');
       else if (err.code === 'auth/email-already-in-use') setError('E-mail já cadastrado.');
       else if (err.code === 'auth/weak-password') setError('A senha deve ter pelo menos 6 caracteres.');
+      else if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') setError('E-mail ou senha incorretos.');
       else setError('Ocorreu um erro ao tentar entrar. Tente novamente.');
     }
   };

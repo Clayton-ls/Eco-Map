@@ -18,7 +18,8 @@ O projeto foi desenvolvido no âmbito de uma atividade extensionista (AE-I/II), 
   | Área Verde | 🟣 Violeta |
   | Feira Orgânica | 🟠 Laranja |
 
-- 🔎 Busca/filtro de pontos por nome
+- 🔎 Busca de pontos por nome e filtro por categoria
+- ✏️ Edição e exclusão dos próprios pontos (apenas o autor)
 - ⚡ **Tempo real**: novos pontos aparecem instantaneamente no mapa de todos os usuários (`onSnapshot` do Firestore)
 - 🔐 Criação de conta e login com e-mail/senha (Firebase Authentication) — apenas usuários logados podem adicionar pontos; convidados podem navegar pelo mapa
 - ✅ Mensagens de erro amigáveis em português (e-mail inválido, senha incorreta, etc.)
@@ -49,7 +50,9 @@ npm install
 
 # 2. Crie o arquivo .env na raiz do projeto (veja "Variáveis de ambiente")
 
-# 3. Rode em modo desenvolvimento
+# 3. Publique as regras de segurança do Firestore (firestore.rules) no Firebase Console
+
+# 4. Rode em modo desenvolvimento
 npm start
 # → http://localhost:3000
 
@@ -59,7 +62,7 @@ npm run build
 
 ## 🔐 Variáveis de ambiente
 
-As chaves do Firebase **não estão escritas no código** — são lidas de variáveis de ambiente em tempo de build. Crie um arquivo `.env` na raiz do projeto (ele já está no `.gitignore`, então nunca o commite):
+As chaves do Firebase **não estão escritas no código** — são lidas de variáveis de ambiente em tempo de build. Copie o arquivo `.env.example` para `.env` na raiz do projeto (ambos já estão no `.gitignore`, então nunca os commite) e preencha com suas chaves:
 
 ```env
 REACT_APP_FIREBASE_API_KEY=<sua_api_key>
@@ -75,6 +78,9 @@ Todos os valores estão disponíveis em **Firebase Console → Project settings*
 ## 📁 Estrutura do projeto
 
 ```
+firestore.rules            # Regras de segurança do Firestore (leitura aberta; escrita só pelo autor)
+public/
+└── index.html             # Template da página (Create React App)
 src/
 ├── App.js                 # Rotas, busca e estado dos pontos
 ├── firebase.js            # Inicialização do Firebase (Auth + Firestore) e coleção ecoPoints
@@ -94,4 +100,5 @@ src/
 2. Clique em **Entrar / Cadastrar** e crie sua conta com e-mail/senha;
 3. No formulário **Novo Ponto**, preencha o nome, selecione o tipo (Coleta Seletiva, Área Verde ou Feira Orgânica), adicione uma descrição e clique em **Marcar minha localização** — o navegador pedirá permissão de geolocalização;
 4. O ponto é salvo no Firestore e aparece no mapa — e também no mapa dos demais usuários, em tempo real;
-5. Use a barra de busca acima do mapa para filtrar pontos por nome.
+5. Use a barra de busca e o filtro de categoria acima do mapa para localizar pontos;
+6. Abra o popup de um ponto criado por você para **Editar** ou **Excluir** as informações.

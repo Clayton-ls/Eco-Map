@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
-export default function AddPointForm({ onAdd }) {
+export default function AddPointForm({ onSave, editingPoint = null, onCancelEdit }) {
   const { user } = useAuth();
-  const [form, setForm] = useState({
-    name: "",
-    type: "coleta",
-    description: ""
-  });
+  const [form, setForm] = useState(() => ({
+    name: editingPoint?.name || "",
+    type: editingPoint?.type || "coleta",
+    description: editingPoint?.description || ""
+  }));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -50,6 +50,13 @@ export default function AddPointForm({ onAdd }) {
     setIsLoading(true);
     setError(null);
 
+    // Em modo edição, mantemos a coordenada original do ponto
+    if (editingPoint) {
+      await onSave({ ...form, latitude: editingPoint.latitude, longitude: editingPoint.longitude });
+      setIsLoading(false);
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const newPoint = {
@@ -57,7 +64,7 @@ export default function AddPointForm({ onAdd }) {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude
         };
-        await onAdd(newPoint);
+        await onSave(newPoint);
         setForm({ name: "", type: "coleta", description: "" });
         setIsLoading(false);
       },
@@ -75,7 +82,7 @@ export default function AddPointForm({ onAdd }) {
       borderRadius: "8px",
       boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
     }}>
-      <h2 style={{ marginTop: 0 }}>Novo Ponto</h2>
+      <h2 style={{ marginTop: 0 }}>{editingPoint ? "Editar Ponto" : "Novo Ponto"}</h2>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
         
         <label>Nome do Local</label>
@@ -121,8 +128,26 @@ export default function AddPointForm({ onAdd }) {
             fontWeight: "bold"
           }}
         >
-          {isLoading ? "Salvando..." : "Marcar minha localização"}
+          {isLoading ? "Salvando..." : editingPoint ? "Salvar alterações" : "Marcar minha localização"}
         </button>
+
+        {editingPoint && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            style={{
+              marginTop: "0.5rem",
+              padding: "0.8rem",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              background: "transparent",
+              color: "#666",
+              cursor: "pointer"
+            }}
+          >
+            Cancelar edição
+          </button>
+        )}
       </form>
     </div>
   );

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ecoPointsCollection } from './firebase';
-import { addDoc, onSnapshot } from 'firebase/firestore';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Snackbar } from '@mui/material';
+import { addDoc, onSnapshot, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { Snackbar, CircularProgress } from '@mui/material';
+
+import { db } from './firebase';
 
 // Contexto
 import { useAuth } from './contexts/AuthContext';
@@ -14,39 +16,74 @@ import Login from './components/Login';
 
 function App() {
   const [points, setPoints] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [editingPoint, setEditingPoint] = useState(null);
   const { user, logout} = useAuth();
  
   const filteredPoints = points.filter(point => {
     const validName = point.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const validType = typeFilter ? point.type === typeFilter : true;
     const validCoords = point.latitude != null && point.longitude != null;
-    return validName && validCoords;
+    return validName && validType && validCoords;
   });
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(ecoPointsCollection, (snapshot) => {
-      const pointsData = [];
-      snapshot.forEach(doc => pointsData.push({ id: doc.id, ...doc.data() }));
-      setPoints(pointsData);
-    });
+    const unsubscribe = onSnapshot(
+      ecoPointsCollection,
+      (snapshot) => {
+        const pointsData = [];
+        snapshot.forEach((d) => pointsData.push({ id: d.id, ...d.data() }));
+        setPoints(pointsData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Erro ao carregar pontos:", error);
+        setLoading(false);
+        setSnackbar({ open: true, message: "Erro ao carregar os pontos do mapa. Verifique as regras do Firestore." });
+      }
+    );
     return () => unsubscribe();
   }, []);
 
-  const handleAddPoint = async (newPoint) => {
+  const handleSavePoint = async (newPoint) => {
     try {
-      await addDoc(ecoPointsCollection, {
-        name: newPoint.name || "Sem nome",
-        type: newPoint.type || "coleta",
-        description: newPoint.description || "",
-        latitude: newPoint.latitude,
-        longitude: newPoint.longitude,
-        createdAt: new Date()
-      });
-      setSnackbar({ open: true, message: "Ponto adicionado com sucesso!" });
+      if (editingPoint) {
+        // Edição: atualiza apenas os campos editáveis (a coordenada original é mantida)
+        await updateDoc(doc(db, "ecoPoints", editingPoint.id), {
+          name: newPoint.name || "Sem nome",
+          type: newPoint.type || "coleta",
+          description: newPoint.description || ""
+        });
+        setSnackbar({ open: true, message: "Ponto atualizado com sucesso!" });
+      } else {
+        await addDoc(ecoPointsCollection, {
+          name: newPoint.name || "Sem nome",
+          type: newPoint.type || "coleta",
+          description: newPoint.description || "",
+          latitude: newPoint.latitude,
+          longitude: newPoint.longitude,
+          userId: user.uid,
+          createdAt: serverTimestamp()
+        });
+        setSnackbar({ open: true, message: "Ponto adicionado com sucesso!" });
+      }
+      setEditingPoint(null);
     } catch (err) {
       console.error("Erro ao salvar:", err);
       setSnackbar({ open: true, message: "Erro ao salvar ponto." });
+    }
+  };
+
+  const handleDeletePoint = async (point) => {
+    try {
+      await deleteDoc(doc(db, "ecoPoints", point.id));
+      setSnackbar({ open: true, message: "Ponto removido com sucesso!" });
+    } catch (err) {
+      console.error("Erro ao remover:", err);
+      setSnackbar({ open: true, message: "Erro ao remover o ponto." });
     }
   };
 
@@ -86,9 +123,9 @@ function App() {
             </div>
           ) : (
             window.location.pathname !== '/login' && (
-              <a href="/login" className="btn-login">
+              <Link to="/login" className="btn-login">
                 Entrar / Cadastrar
-              </a>
+              </Link>
             )
           )}
         </nav>
@@ -98,18 +135,46 @@ function App() {
             <Route path="/" element={
               <div className="main-container"> 
                 <aside className="aside-form">
-                  <AddPointForm onAdd={handleAddPoint} />
+                  <AddPointForm
+                    key={editingPoint ? editingPoint.id : "novo"}
+                    onSave={handleSavePoint}
+                    editingPoint={editingPoint}
+                    onCancelEdit={() => setEditingPoint(null)}
+                  />
                 </aside>
               <main className="main-map">
-              <input
-                type="text"
-                placeholder="Buscar pontos (ex: coleta, feira)..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
+              <div className="search-bar">
+                <input
+                  type="text"
+                  placeholder="Buscar pontos (ex: coleta, feira)..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="">Todos os tipos</option>
+                  <option value="coleta">Coleta Seletiva</option>
+                  <option value="verde">Área Verde</option>
+                  <option value="feira">Feira Orgânica</option>
+                </select>
+              </div>
               <div className="map-wrapper">
-                <MapView points={filteredPoints} />
+                {loading && (
+                  <div className="map-loading">
+                    <CircularProgress size={28} />
+                    <span>Carregando pontos…</span>
+                  </div>
+                )}
+                <MapView
+                  points={filteredPoints}
+                  user={user}
+                  onEdit={setEditingPoint}
+                  onDelete={handleDeletePoint}
+                />
               </div>
             </main>
             </div>
