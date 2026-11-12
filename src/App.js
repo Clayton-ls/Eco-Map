@@ -89,15 +89,8 @@ function App() {
 
   return (
       <Router>
-        <div className="app" style={{ padding: "1rem", maxWidth: "1200px", margin: "0 auto" }}>
-      <header style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '2rem',
-        borderBottom: '1px solid #eee',
-        paddingBottom: '1rem'
-      }}>
+        <div className="app">
+      <header className="app-header">
         <div>
           <h1 style={{ margin: 0, color: '#2E7D32' }}>EcoMap</h1>
           <p style={{ margin: 0, color: "#666" }}>Mapeando um mundo mais sustentável</p>

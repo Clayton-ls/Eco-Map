@@ -1,7 +1,12 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f8f9fa;
   color: #333;
@@ -22,6 +27,7 @@ body {
   background-color: var(--bg-light);
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   margin-bottom: 2rem;
+  border-bottom: 1px solid #eee; /* movido do inline style do App.js */
 }
 
 .header-info h1 {
@@ -42,13 +48,19 @@ body {
   gap: 1rem;
 }
 
+/* Container principal da raiz (substitui o style inline do App.js) */
+.app {
+  width: 100%;
+  max-width: 1600px; /* antes era 1200px via inline style — sobrava espaço no desktop */
+  margin: 0 auto;
+  padding: 1rem;
+}
+
 .main-container {
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: 2rem;
-  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1rem;
 }
 
 .search-input {
@@ -67,7 +79,9 @@ body {
 }
 
 .map-wrapper {
-  height: 600px;
+  height: calc(100vh - 250px);
+  min-height: 600px;
+  width: 100%; /* era: width: calc(100vh - 700px) + min-width: 600px (quebrava no mobile) */
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -93,33 +107,6 @@ button {
   font-weight: bold;
 }
 
-@media (max-width: 900px) {
-  .main-container {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .main-map {
-    order: 1;
-  }
-
-  .aside-form {
-    order: 2;
-    width: 100%;
-  }
-
-  .map-wrapper {
-    height: 400px;
-  }
-
-  .app-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-    padding: 1rem;
-  }
-}
-
 /* Busca + filtro de categoria */
 .search-bar {
   display: flex;
@@ -128,6 +115,7 @@ button {
 
 .search-bar .search-input {
   flex: 1;
+  margin-bottom: 0; /* alinha o input com o select na mesma linha */
 }
 
 .filter-select {
@@ -186,4 +174,43 @@ button {
 
 .btn-delete {
   background-color: var(--error);
+}
+
+/* ---------- Mobile / tablet (<= 900px) ---------- */
+@media (max-width: 900px) {
+  .main-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main-map {
+    order: 1;
+  }
+
+  .aside-form {
+    order: 2;
+    width: 100%;
+  }
+
+  .map-wrapper {
+    height: 400px;
+    min-height: 0; /* cancela o min-height: 600px da regra base */
+    width: 100%;
+  }
+
+  .app-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  /* busca e filtro empilhados, cada um com largura total */
+  .search-bar {
+    flex-direction: column;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
 }
